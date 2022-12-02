@@ -1,26 +1,19 @@
 {
-    "name": "GMeet_controller",
-    "version": "1.0",
     "manifest_version": 3,
-    "content_security_policy": {
-        "extension_pages": "script-src 'self'; object-src 'self'"
+    "name": "Meet Virtual Background",
+    "version": "1.0.1",
+    "description": "testing the google meet",
+    "icons":{
+        "16": "image/eye.png",
+        "32":"image/eye-2.png",
+        "48":"image/eye-3.png",
+        "128":"image/eye-3.png"
     },
-    "description": "An extension to control Google Meet Actions using hand/facial gestures.",
-    "permissions": [
-        "activeTab",
-        "storage",
-        "tabs",
-        "notifications"
-    ],
     "content_scripts": [
         {
-            "matches": [
+            "js":["scripts/content.js"],
+            "matches":[
                 "https://meet.google.com/*"
-            ],
-            "js": [
-                "src/tf2.min.js",
-                "src/teachablemachine-pose.min.js",
-                "src/background.js"
             ]
         }
     ]

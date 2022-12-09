@@ -11,10 +11,18 @@
     },
     "content_scripts": [
         {
-            "js":["cs.js"],
+            "js":["scripts/load.js"],
             "matches":[
                 "https://meet.google.com/*"
             ]
         }
-    ]
+    ],
+"permissions": [
+  "activeTab"
+],
+"web_accessible_resources": [{
+  "resources": [ "cs.js" ],
+  "matches": ["<all_urls>"]
+}
+]
 }

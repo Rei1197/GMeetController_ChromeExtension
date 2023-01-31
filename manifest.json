@@ -1,28 +1,24 @@
 {
     "manifest_version": 3,
-    "name": "Meet Virtual Background",
+    "name": "Meet Extension for Object Detection",
+    "description": "Chrome extension to detect objects on Google Meet. (in Progress)",
     "version": "1.0.1",
-    "description": "testing the google meet",
-    "icons":{
-        "16": "image/eye.png",
-        "32":"image/eye-2.png",
-        "48":"image/eye-3.png",
-        "128":"image/eye-3.png"
+    "icons": {
+      "16": "images/video.png",
+      "48": "images/video.png",
+      "128": "images/video.png"
     },
-    "content_scripts": [
-        {
-            "js":["scripts/load.js"],
-            "matches":[
-                "https://meet.google.com/*"
-            ]
-        }
-    ],
-"permissions": [
-  "activeTab"
-],
-"web_accessible_resources": [{
-  "resources": [ "cs.js" ],
-  "matches": ["<all_urls>"]
-}
-]
-}
+    "permissions": ["activeTab"],
+    "content_scripts":[{
+      "matches": ["https://meet.google.com/*"],
+      "js": ["src/script.js"],
+      "css": ["src/css/style.css"],
+      "run_at": "document_start",
+      "all_frame": true
+    }],
+   
+    "action": {
+      "default_icon": "images/video.png",
+      "default_title": "Screenshot and Classify"
+    }
+  }

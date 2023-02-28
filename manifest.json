@@ -1,24 +1,13 @@
 {
     "manifest_version": 3,
-    "name": "Meet Extension for Object Detection",
-    "description": "Chrome extension to detect objects on Google Meet. (in Progress)",
+    "name": "ReactJS Extension (Development)",
+    "description": "The extension for chrome using ReactJS.",
     "version": "1.0.1",
     "icons": {
-      "16": "images/video.png",
-      "48": "images/video.png",
-      "128": "images/video.png"
-    },
-    "permissions": ["activeTab"],
-    "content_scripts":[{
-      "matches": ["https://meet.google.com/*"],
-      "js": ["src/script.js"],
-      "css": ["src/css/style.css"],
-      "run_at": "document_start",
-      "all_frame": true
-    }],
-   
-    "action": {
-      "default_icon": "images/video.png",
-      "default_title": "Screenshot and Classify"
-    }
-  }
+        "16": "assests/chrome_icon_64.png",
+        "32": "assests/chrome_icon_64.png",
+        "48": "assests/chrome_icon_64.png",
+        "128": "assests/chrome_icon_128.png"
+      }
+}
+

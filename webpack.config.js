@@ -1,3 +1,6 @@
+const path = require ('path');
+const CopyPlugin = require('copy-webpack-plugin');
+
 module.exports = {
 	mode: 'development',
 	entry: './src/test.tsx',
@@ -10,6 +13,24 @@ module.exports = {
 			}
 		]
 	},
+	plugins: [
+		new CopyPlugin(
+			{
+				patterns:[
+					{
+						//moving manifest file into the destination folder
+						from: path.resolve('src/manifest.json'),
+						to: path.resolve('dist')
+					},
+					{
+						//moving asset file into the destination folder
+						from: path.resolve('src/assests/'),
+						to: path.resolve('dist')
+					}
+				],
+			}
+		)
+	],
 	resolve: {
 		extensions: ['.tsx', '.ts', '.js']
 	},

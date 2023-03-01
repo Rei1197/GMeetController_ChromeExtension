@@ -1,4 +1,12 @@
 modules added with yarn
 1. react dom
 2. init
-3. webpack cli
+3. 
+
+------------------
+Current: WIP
+- added tsconfig.json
+
+##Assests
+- src/assests have been compiled into the dist folder without specifying the path name.
+- it is coded with "icon_***.png" only.

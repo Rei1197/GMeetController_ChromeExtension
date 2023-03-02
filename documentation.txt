@@ -8,6 +8,7 @@ Current: WIP
 - added tsconfig.json
 - tested frontend by generating "Hello World"
 - injected service worker with background.js
+- loaded cocossd and tensorflow successfully
 
 ##Assests
 - src/assests have been compiled into the dist folder without specifying the path name.

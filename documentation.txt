@@ -6,6 +6,7 @@ modules added with yarn
 ------------------
 Current: WIP
 - added tsconfig.json
+- tested frontend by generating "Hello World"
 
 ##Assests
 - src/assests have been compiled into the dist folder without specifying the path name.

@@ -8,6 +8,10 @@
         "32": "chrome_icon_64.png",
         "48": "chrome_icon_64.png",
         "128": "chrome_icon_128.png"
+      },
+      "action": {
+        "default_title": "Click Me",
+        "default_popup": "popup.html"
       }
 }
 

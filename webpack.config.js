@@ -6,7 +6,8 @@ module.exports = {
 	mode: 'development',
 	devtool: 'cheap-module-source-map',
 	entry: {
-		popup: path.resolve('./src/popup/popup.tsx')
+		popup: path.resolve('./src/popup/popup.tsx'),
+		background: path.resolve('./src/background/background.ts')
 	},
 	module: {
 		rules:[
@@ -14,6 +15,10 @@ module.exports = {
 				use: 'ts-loader',
 				test: /\.tsx?$/,
 				exclude: /node_modules/
+			},
+			{
+				use:['style-loader','css-loader'],
+				test: /\.css$/i
 			}
 		]
 	},

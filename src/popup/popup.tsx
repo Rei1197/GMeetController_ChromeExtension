@@ -7,6 +7,14 @@ const Popup: React.FC = () => {
   const [streamId, setStreamId] = useState<string | undefined>(undefined);
   const [cameraOn, setCameraOn] = useState<boolean>(false);
 
+// const startDetection = () => {
+//     chrome.runtime.sendMessage({ action: 'startDetection' });
+//   };
+
+//   const stopDetection = () => {
+//     chrome.runtime.sendMessage({ action: 'stopDetection' });
+//   };
+
   const startCamera = () => {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       chrome.tabs.sendMessage(tabs[0].id, { action: 'startCamera' }, (response) => {
@@ -28,6 +36,10 @@ const Popup: React.FC = () => {
   };
 
   return (
+    // <>
+    //   <button onClick={startDetection}>Start Camera</button>
+    //   <button onClick={stopDetection}>Stop Camera</button>
+    // </>
     <div>
       {cameraOn ? (
         <div>

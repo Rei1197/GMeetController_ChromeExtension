@@ -21,7 +21,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default()((_node_modules_css_loader_dist_runtime_sourceMaps_js__WEBPACK_IMPORTED_MODULE_0___default()));
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, "body{\n    height: 200px;\n    width: 400px;\n    background-color: grey;\n    color: white;\n}", "",{"version":3,"sources":["webpack://./src/popup/popup.css"],"names":[],"mappings":"AAAA;IACI,aAAa;IACb,YAAY;IACZ,sBAAsB;IACtB,YAAY;AAChB","sourcesContent":["body{\n    height: 200px;\n    width: 400px;\n    background-color: grey;\n    color: white;\n}"],"sourceRoot":""}]);
+___CSS_LOADER_EXPORT___.push([module.id, "body{\n    background-color: grey;\n    color: white;\n}", "",{"version":3,"sources":["webpack://./src/popup/popup.css"],"names":[],"mappings":"AAAA;IACI,sBAAsB;IACtB,YAAY;AAChB","sourcesContent":["body{\n    background-color: grey;\n    color: white;\n}"],"sourceRoot":""}]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
@@ -30093,7 +30093,6 @@ if (false) {} else {
 }
 
 
-
 /***/ }),
 
 /***/ "./node_modules/react/cjs/react.development.js":
@@ -33972,6 +33971,9 @@ var __webpack_exports__ = {};
   !*** ./src/popup/popup.tsx ***!
   \*****************************/
 __webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var react_dom_client__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react-dom/client */ "./node_modules/react-dom/client.js");
@@ -33979,18 +33981,43 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-const test = (react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null,
-    react__WEBPACK_IMPORTED_MODULE_0___default().createElement("h1", null, "Hello World"),
-    react__WEBPACK_IMPORTED_MODULE_0___default().createElement("p", null, "The world we live in is constantly evolving, and we need to adapt to these changes to thrive. We need to be resilient and open to new ideas and perspectives. We need to be proactive and take action to create a better future for ourselves and for those around us."),
-    react__WEBPACK_IMPORTED_MODULE_0___default().createElement("h1", null, "Object Detection Model with #TFJS."),
-    react__WEBPACK_IMPORTED_MODULE_0___default().createElement("h2", null, " Instruction "),
-    react__WEBPACK_IMPORTED_MODULE_0___default().createElement("p", null, "Wait for the model to load before clicking the button to enable the webcam - at which point it will become visible to use."),
-    react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null,
-        react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null,
-            react__WEBPACK_IMPORTED_MODULE_0___default().createElement("p", null, "Hold some objects up close to your webcam to get a real-time classification! "),
-            react__WEBPACK_IMPORTED_MODULE_0___default().createElement("p", null, " When ready, click \"enable webcam\" below and accept access to the webcam when the browser asks (check the top left of your window)")),
-        react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", { id: "liveView" },
-            react__WEBPACK_IMPORTED_MODULE_0___default().createElement("button", { id: "webcamButton" }, "Enable Webcam")))));
+const Popup = () => {
+    const [streamId, setStreamId] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(undefined);
+    const [cameraOn, setCameraOn] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false);
+    // const startDetection = () => {
+    //     chrome.runtime.sendMessage({ action: 'startDetection' });
+    //   };
+    //   const stopDetection = () => {
+    //     chrome.runtime.sendMessage({ action: 'stopDetection' });
+    //   };
+    const startCamera = () => {
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+            chrome.tabs.sendMessage(tabs[0].id, { action: 'startCamera' }, (response) => {
+                setStreamId(response.streamId);
+                setCameraOn(true);
+                chrome.tabs.sendMessage(tabs[0].id, { action: 'saveStreamId', streamId: response.streamId });
+            });
+        });
+    };
+    const stopCamera = () => {
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+            chrome.tabs.sendMessage(tabs[0].id, { action: 'stopCamera' }, () => {
+                setStreamId(undefined);
+                setCameraOn(false);
+            });
+        });
+    };
+    return (
+    // <>
+    //   <button onClick={startDetection}>Start Camera</button>
+    //   <button onClick={stopDetection}>Stop Camera</button>
+    // </>
+    react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, cameraOn ? (react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null,
+        react__WEBPACK_IMPORTED_MODULE_0___default().createElement("video", { id: "camera-feed", autoPlay: true, muted: true }),
+        react__WEBPACK_IMPORTED_MODULE_0___default().createElement("button", { onClick: stopCamera }, "Stop Camera"))) : (react__WEBPACK_IMPORTED_MODULE_0___default().createElement("button", { onClick: startCamera }, "Start Camera"))));
+};
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (Popup);
+const test = (react__WEBPACK_IMPORTED_MODULE_0___default().createElement(Popup, null));
 const container = document.createElement('div');
 document.body.appendChild(container);
 const root = (0,react_dom_client__WEBPACK_IMPORTED_MODULE_1__.createRoot)(container);

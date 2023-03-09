@@ -1,53 +1,78 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {createRoot} from 'react-dom/client'
 import './popup.css'
 
 
 const Popup: React.FC = () => {
-  const [streamId, setStreamId] = useState<string | undefined>(undefined);
-  const [cameraOn, setCameraOn] = useState<boolean>(false);
+  const [isDetecting, setIsDetecting] = useState(false);
+  const [detectionResults, setDetectionResults] = useState([]);
 
-// const startDetection = () => {
-//     chrome.runtime.sendMessage({ action: 'startDetection' });
-//   };
-
-//   const stopDetection = () => {
-//     chrome.runtime.sendMessage({ action: 'stopDetection' });
-//   };
-
-  const startCamera = () => {
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      chrome.tabs.sendMessage(tabs[0].id, { action: 'startCamera' }, (response) => {
-        setStreamId(response.streamId);
-        setCameraOn(true);
-
-        chrome.tabs.sendMessage(tabs[0].id, { action: 'saveStreamId', streamId: response.streamId });
-      });
+  useEffect(() => {
+    chrome.runtime.sendMessage({ type: "getStatus" }, (response) => {
+      setIsDetecting(response.isDetecting);
     });
+  }, []);
+
+  useEffect(() => {
+    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+      if (message.type === "statusChange") {
+        setIsDetecting(message.isDetecting);
+      } else if (message.type === "detectionResult") {
+        setDetectionResults(message.results);
+      }
+    });
+  }, []);
+
+  const handleStartDetection = () => {
+    chrome.runtime.sendMessage({ type: "startDetection" });
   };
 
-  const stopCamera = () => {
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      chrome.tabs.sendMessage(tabs[0].id, { action: 'stopCamera' }, () => {
-        setStreamId(undefined);
-        setCameraOn(false);
-      });
-    });
+  const handleStopDetection = () => {
+    chrome.runtime.sendMessage({ type: "stopDetection" });
+    setDetectionResults([]);
   };
+
+  // const startCamera = () => {
+  //   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+  //     chrome.tabs.sendMessage(tabs[0].id, { action: 'startCamera' }, (response) => {
+  //       setStreamId(response.streamId);
+  //       setCameraOn(true);
+
+  //       chrome.tabs.sendMessage(tabs[0].id, { action: 'saveStreamId', streamId: response.streamId });
+  //     });
+  //   });
+  // };
+
+  // const stopCamera = () => {
+  //   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+  //     chrome.tabs.sendMessage(tabs[0].id, { action: 'stopCamera' }, () => {
+  //       setStreamId(undefined);
+  //       setCameraOn(false);
+  //     });
+  //   });
+  // };
 
   return (
-    // <>
-    //   <button onClick={startDetection}>Start Camera</button>
-    //   <button onClick={stopDetection}>Stop Camera</button>
-    // </>
-    <div>
-      {cameraOn ? (
+    <div className="popup">
+      <h1>Object Detection</h1>
+      <p>Status: {isDetecting ? "Detecting" : "Not detecting"}</p>
+      <div>
+        <button disabled={isDetecting} onClick={handleStartDetection}>
+          Start Detection
+        </button>
+        <button disabled={!isDetecting} onClick={handleStopDetection}>
+          Stop Detection
+        </button>
+      </div>
+      {detectionResults.length > 0 && (
         <div>
-          <video id="camera-feed" autoPlay muted></video>
-          <button onClick={stopCamera}>Stop Camera</button>
+          <h2>Detection Results</h2>
+          <ul>
+            {detectionResults.map((result, index) => (
+              <li key={index}>{JSON.stringify(result)}</li>
+            ))}
+          </ul>
         </div>
-      ) : (
-        <button onClick={startCamera}>Start Camera</button>
       )}
     </div>
   );

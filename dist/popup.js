@@ -33982,39 +33982,58 @@ __webpack_require__.r(__webpack_exports__);
 
 
 const Popup = () => {
-    const [streamId, setStreamId] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(undefined);
-    const [cameraOn, setCameraOn] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false);
-    // const startDetection = () => {
-    //     chrome.runtime.sendMessage({ action: 'startDetection' });
-    //   };
-    //   const stopDetection = () => {
-    //     chrome.runtime.sendMessage({ action: 'stopDetection' });
-    //   };
-    const startCamera = () => {
-        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-            chrome.tabs.sendMessage(tabs[0].id, { action: 'startCamera' }, (response) => {
-                setStreamId(response.streamId);
-                setCameraOn(true);
-                chrome.tabs.sendMessage(tabs[0].id, { action: 'saveStreamId', streamId: response.streamId });
-            });
+    const [isDetecting, setIsDetecting] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(false);
+    const [detectionResults, setDetectionResults] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]);
+    (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
+        chrome.runtime.sendMessage({ type: "getStatus" }, (response) => {
+            setIsDetecting(response.isDetecting);
         });
-    };
-    const stopCamera = () => {
-        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-            chrome.tabs.sendMessage(tabs[0].id, { action: 'stopCamera' }, () => {
-                setStreamId(undefined);
-                setCameraOn(false);
-            });
+    }, []);
+    (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
+        chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+            if (message.type === "statusChange") {
+                setIsDetecting(message.isDetecting);
+            }
+            else if (message.type === "detectionResult") {
+                setDetectionResults(message.results);
+            }
         });
+    }, []);
+    const handleStartDetection = () => {
+        chrome.runtime.sendMessage({ type: "startDetection" });
     };
-    return (
-    // <>
-    //   <button onClick={startDetection}>Start Camera</button>
-    //   <button onClick={stopDetection}>Stop Camera</button>
-    // </>
-    react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null, cameraOn ? (react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null,
-        react__WEBPACK_IMPORTED_MODULE_0___default().createElement("video", { id: "camera-feed", autoPlay: true, muted: true }),
-        react__WEBPACK_IMPORTED_MODULE_0___default().createElement("button", { onClick: stopCamera }, "Stop Camera"))) : (react__WEBPACK_IMPORTED_MODULE_0___default().createElement("button", { onClick: startCamera }, "Start Camera"))));
+    const handleStopDetection = () => {
+        chrome.runtime.sendMessage({ type: "stopDetection" });
+        setDetectionResults([]);
+    };
+    // const startCamera = () => {
+    //   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    //     chrome.tabs.sendMessage(tabs[0].id, { action: 'startCamera' }, (response) => {
+    //       setStreamId(response.streamId);
+    //       setCameraOn(true);
+    //       chrome.tabs.sendMessage(tabs[0].id, { action: 'saveStreamId', streamId: response.streamId });
+    //     });
+    //   });
+    // };
+    // const stopCamera = () => {
+    //   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    //     chrome.tabs.sendMessage(tabs[0].id, { action: 'stopCamera' }, () => {
+    //       setStreamId(undefined);
+    //       setCameraOn(false);
+    //     });
+    //   });
+    // };
+    return (react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", { className: "popup" },
+        react__WEBPACK_IMPORTED_MODULE_0___default().createElement("h1", null, "Object Detection"),
+        react__WEBPACK_IMPORTED_MODULE_0___default().createElement("p", null,
+            "Status: ",
+            isDetecting ? "Detecting" : "Not detecting"),
+        react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null,
+            react__WEBPACK_IMPORTED_MODULE_0___default().createElement("button", { disabled: isDetecting, onClick: handleStartDetection }, "Start Detection"),
+            react__WEBPACK_IMPORTED_MODULE_0___default().createElement("button", { disabled: !isDetecting, onClick: handleStopDetection }, "Stop Detection")),
+        detectionResults.length > 0 && (react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", null,
+            react__WEBPACK_IMPORTED_MODULE_0___default().createElement("h2", null, "Detection Results"),
+            react__WEBPACK_IMPORTED_MODULE_0___default().createElement("ul", null, detectionResults.map((result, index) => (react__WEBPACK_IMPORTED_MODULE_0___default().createElement("li", { key: index }, JSON.stringify(result)))))))));
 };
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (Popup);
 const test = (react__WEBPACK_IMPORTED_MODULE_0___default().createElement(Popup, null));

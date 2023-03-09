@@ -4,24 +4,27 @@ var __webpack_exports__ = {};
   !*** ./src/background/background.ts ***!
   \**************************************/
 console.log('this is working from background.ts');
-// // import * as tf from '@tensorflow/tfjs';
+// import * as tf from '@tensorflow/tfjs';
+// import '@tensorflow/tfjs-backend-cpu';
 // import '@tensorflow/tfjs-backend-webgl';
+// import * as tf from "@tensorflow/tfjs";
 // import * as cocoSsd from '@tensorflow-models/coco-ssd';
-// let model: cocoSsd.ObjectDetection;
-// async function loadModel() {
-//   try {
-//     model = await cocoSsd.load();
-//     chrome.storage.local.set({ model });
-//     console.log('COCO-SSD model loaded successfully');
-//   } catch (err) {
-//     console.log('Failed to load COCO-SSD model', err);
-//   }
+// export async function loadModel(): Promise<tf.GraphModel> {
+//   const model = await tf.loadGraphModel('https://tfhub.dev/tensorflow/tfjs-model/coco-ssd/1/default/1');
+//   console.log('Model loaded.');
+//   return model;
 // }
-// loadModel();
-// // Load the COCO-SSD model
-// cocossd.load().then(model => {
-//     // Log a message to the console indicating that the model is loaded
-//     console.log('Model loaded.');
+//   self.addEventListener("install", (event: Event) => {
+//     const extendableEvent = event as ExtendableEvent;
+//     extendableEvent.waitUntil(
+//       loadModel().then(([model, cocoModel]) => {
+//         self["model"] = model;
+//         self["cocoModel"] = cocoModel;
+//       })
+//     );
+//   });
+//   self.addEventListener("fetch", (event: FetchEvent) => {
+//     event.respondWith(fetch(event.request));
 //   });
 //   function openCam(){
 //   const constraints = {

@@ -9,6 +9,7 @@
         "48": "chrome_icon_64.png",
         "128": "chrome_icon_128.png"
       },
+    "host_permissions": ["<all_urls>"],
     "action": {
         "default_title": "Click Me",
         "default_popup": "popup.html"
@@ -16,7 +17,7 @@
     "background":{
         "service_worker": "background.js"
       },
-    "permissions": ["activeTab","storage","tabs"],
+    "permissions": ["activeTab","storage","tabs","scripting","desktopCapture"],
     "content_scripts": [
       {
         "matches": ["https://*.google.com/*"],

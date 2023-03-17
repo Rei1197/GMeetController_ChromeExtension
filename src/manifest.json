@@ -17,11 +17,17 @@
     "background":{
         "service_worker": "background.js"
       },
-    "permissions": ["activeTab","storage","tabs","scripting","desktopCapture"],
+    "permissions": ["contextMenus","tabs","activeTab","storage","tabCapture"],
     "content_scripts": [
       {
         "matches": ["https://*.google.com/*"],
         "js": ["contentScript.js"]
+      }
+    ],
+    "web_accessible_resources": [
+      {
+        "resources": ["https://cdn.jsdelivr.net/npm/@tensorflow/tfjs", "https://storage.googleapis.com/tfjs-models/savedmodel/ssdlite_mobilenet_v2/model.json"],
+        "matches": [ "https://meet.google.com/*" ]
       }
     ]
 }

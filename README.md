@@ -1,5 +1,5 @@
 # GMeetController_ChromeExtension (WIP)
-This is the source code for chrome extension for google meet controller using ReactJS and Webpack.
+detecting the objects via Meet.
 
 **before running this extension, remember to :**
 

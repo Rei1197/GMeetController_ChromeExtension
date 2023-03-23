@@ -1,6 +1,6 @@
 {
     "manifest_version": 3,
-    "name": "ReactJS Extension (Development)",
+    "name": "ReactJS Extension (Github)",
     "description": "The extension for chrome using ReactJS.",
     "version": "1.0.1",
     "icons": {

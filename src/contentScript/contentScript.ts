@@ -29,6 +29,7 @@ chrome.runtime.onMessage.addListener(async (message: any) => {
 
   const findVideoElements = () => {
 	const containerElements = document.getElementsByClassName("p2hjYe TPpRNe");
+	//ADivge Gt2yUd NbyP5 || Gv1mTb-aTv5jf || p2hjYe TPpRNe || Gv1mTb-aTv5jf Gv1mTb-PVLJEc
 	const videoElements: HTMLVideoElement[] = [];
   
 	for (const container of Array.from(containerElements)) {

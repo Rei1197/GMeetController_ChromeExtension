@@ -10,10 +10,6 @@
         "128": "chrome_icon_128.png"
       },
     "host_permissions": ["<all_urls>"],
-    "action": {
-        "default_title": "Click Me",
-        "default_popup": "popup.html"
-      },
     "background":{
         "service_worker": "background.js"
       },

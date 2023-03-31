@@ -22,12 +22,30 @@ chrome.runtime.onMessage.addListener(async (message: any) => {
 	}
 }});
 
+const updateOffscreenCanvasDimensions = (div, OffscreenCanvas) => {
+	const width = div.clientWidth;
+	const height = div.clientHeight;
+  
+	OffscreenCanvas.width = width;
+	OffscreenCanvas.height = height;
+  };
+
 const captureVideoFrame = async (videoElement: HTMLVideoElement) => {
+	// console.log(videoElement.videoWidth, videoElement.videoHeight)
+	const div = videoElement.closest('.p2hjYe.TPpRNe');
 	const offscreenCanvas = new OffscreenCanvas(videoElement.videoWidth, videoElement.videoHeight);
+	updateOffscreenCanvasDimensions(div, offscreenCanvas);
+
 	const ctx = offscreenCanvas.getContext("2d");
+
+	// Apply a horizontal flip transformation
+	// ctx.scale(-1, 1);
+	// ctx.translate(-offscreenCanvas.width, 0);
+
 	ctx.drawImage(videoElement, 0, 0, offscreenCanvas.width, offscreenCanvas.height);
 	return ctx.getImageData(0, 0, offscreenCanvas.width, offscreenCanvas.height);
 };
+
 
 
 const findVideoElements = () => {
@@ -47,6 +65,17 @@ const findVideoElements = () => {
 const processFrame =async (video:HTMLVideoElement, canvas: HTMLCanvasElement, model: cocoSsd.ObjectDetection) => {
 	if (!isDetecting) return;
 
+	if (video.videoWidth === 0 || video.videoHeight === 0) {
+		requestAnimationFrame(() => processFrame(video, canvas, model));
+		return;
+	  }
+	
+	// Update canvas size and position to match the video
+	canvas.width = video.clientWidth;
+	canvas.height = video.clientHeight;
+	canvas.style.left = video.offsetLeft + "px";
+	canvas.style.top = video.offsetTop + "px";
+
 	const frameData = await captureVideoFrame(video);
 	const predictions = await model.detect(frameData);
 
@@ -54,11 +83,15 @@ const processFrame =async (video:HTMLVideoElement, canvas: HTMLCanvasElement, mo
 		detectedClass,
 		score,
 	  }));
-	  console.log("Predictions:", formattedPredictions);
+	
+	  formattedPredictions.forEach(predictions => {
+		console.log("Predictions:", predictions.detectedClass);
+	  });
+	 
 
 	const ctx = canvas.getContext("2d");
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
-	ctx.putImageData(frameData, 0, 0);
+	// ctx.putImageData(frameData, 0, 0);
 
 	for (const prediction of predictions) {
 		ctx.strokeStyle = "#FF0000";
@@ -112,7 +145,12 @@ const logMeetVideoStream = async () => {
 		canvas.style.position = "absolute";
 		canvas.style.top = "0";
 		canvas.style.left = "0";
+		canvas.style.pointerEvents = "none";
+  		canvas.style.zIndex = "1000";
 		video.parentElement.appendChild(canvas);
+		const parentElement = video.parentElement;
+		parentElement.style.position = 'relative';
+		parentElement.appendChild(canvas);
 	
 		processFrame(video, canvas, model);
 	}

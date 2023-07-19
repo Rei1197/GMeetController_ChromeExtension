@@ -132,8 +132,6 @@ const processFrame = async (video:HTMLVideoElement, canvas: HTMLCanvasElement, m
 	console.log('Prediction score:', score);
 	console.log('Prediction coords:', coords);
 
-	
-
 	// Clear the memory
 	img.dispose();
 	resized.dispose();

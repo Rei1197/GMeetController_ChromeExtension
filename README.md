@@ -1,8 +1,38 @@
-# GMeetController_ChromeExtension (WIP)
-detecting the objects via Meet.
+# Details about this repository
 
-**before running this extension, remember to :**
+The repository is for detectin' while in Meet section. After installation of the extension, you will see start detecting and stop detecting buttons for toggle. In the main branch, tensorflow pre-trained model was used.
 
+<table>
+    <tr>
+        <td>
+            <strong>Model</strong>
+        </td>
+        <td>
+           tensorflow (main), VGG16 (update)
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <strong> Language </strong>
+        </td>
+        <td>
+            React JS
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <strong> Prerequisite </strong>
+        </td>
+        <td>
+            yarn, npm, node, webpack
+        </td>
+    </tr>
+</table>
+
+### Installation
+```
+cd GMeetController_ChromeExtension
+```
 ```
 yarn run watch
 ```

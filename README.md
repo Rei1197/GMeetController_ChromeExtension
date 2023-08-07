@@ -8,7 +8,7 @@ The repository is for detectin' while in Meet section. After installation of the
             <strong>Model</strong>
         </td>
         <td>
-           tensorflow (main), VGG16 (update)
+           custom Yolo v8 model
         </td>
     </tr>
     <tr>
@@ -16,7 +16,7 @@ The repository is for detectin' while in Meet section. After installation of the
             <strong> Language </strong>
         </td>
         <td>
-            React JS
+            TypeScript
         </td>
     </tr>
     <tr>

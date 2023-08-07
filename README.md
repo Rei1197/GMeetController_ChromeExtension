@@ -16,7 +16,7 @@ The repository is for detectin' while in Meet section. After installation of the
             <strong> Language </strong>
         </td>
         <td>
-            React JS
+            TypeScript
         </td>
     </tr>
     <tr>

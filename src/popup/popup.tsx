@@ -32,25 +32,6 @@ const Popup: React.FC = () => {
     setDetectionResults([]);
   };
 
-  // const startCamera = () => {
-  //   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-  //     chrome.tabs.sendMessage(tabs[0].id, { action: 'startCamera' }, (response) => {
-  //       setStreamId(response.streamId);
-  //       setCameraOn(true);
-
-  //       chrome.tabs.sendMessage(tabs[0].id, { action: 'saveStreamId', streamId: response.streamId });
-  //     });
-  //   });
-  // };
-
-  // const stopCamera = () => {
-  //   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-  //     chrome.tabs.sendMessage(tabs[0].id, { action: 'stopCamera' }, () => {
-  //       setStreamId(undefined);
-  //       setCameraOn(false);
-  //     });
-  //   });
-  // };
 
   return (
     <div className="popup">

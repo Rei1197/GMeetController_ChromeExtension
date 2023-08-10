@@ -9,12 +9,12 @@ chrome.runtime.onInstalled.addListener(() => {
     // Create the context menu
     chrome.contextMenus.create({
         id: "startDetecting",
-        title: "Start Detection on Google",
+        title: "Start detecting",
         contexts: ["all"],
     });
     chrome.contextMenus.create({
         id: "stopDetecting",
-        title: "Stop Detection on Google",
+        title: "Stop detecting",
         contexts: ["all"],
     });
 });
@@ -32,16 +32,6 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
         chrome.tabs.sendMessage(tab.id, { type: "logMeetVideoStream" });
     }
 });
-//------------------- cam conbine like this -------------------------
-// chrome.contextMenus.onClicked.addListener((info, tab) => {
-//   if (info.menuItemId === 'startDetecting') {
-//     chrome.tabs.sendMessage(tab.id, { type: 'startDetecting' });
-//   } else if (info.menuItemId === 'stopDetecting') {
-//     chrome.tabs.sendMessage(tab.id, { type: 'stopDetecting' });
-//   } else if (info.menuItemId === 'logMeetVideoStream') {
-//     chrome.tabs.sendMessage(tab.id, { type: 'logMeetVideoStream' });
-//   }
-// });
 
 /******/ })()
 ;

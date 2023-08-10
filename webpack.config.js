@@ -40,13 +40,13 @@ module.exports = {
 				],
 			}
 		),
-		new HtmlPlugin(
-			{
-				title: 'ReactJS Boilerplate',
-				filename: 'popup.html',
-				chunks: ['popup']
-			}
-		)
+		// new HtmlPlugin(
+		// 	{
+		// 		title: 'ReactJS Boilerplate',
+		// 		filename: 'popup.html',
+		// 		chunks: ['popup']
+		// 	}
+		// )
 	],
 	resolve: {
 		extensions: ['.tsx', '.ts', '.js']

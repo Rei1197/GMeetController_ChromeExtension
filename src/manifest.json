@@ -35,7 +35,7 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "assests/best_web_model/*",
+        "assests/*",
         "https://cdn.jsdelivr.net/npm/@tensorflow/tfjs",
         "https://storage.googleapis.com/tfjs-models/savedmodel/ssdlite_mobilenet_v2/model.json"
       ],

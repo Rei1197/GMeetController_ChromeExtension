@@ -7,13 +7,13 @@ chrome.runtime.onInstalled.addListener(() => {
   // Create the context menu
   chrome.contextMenus.create({
     id: "startDetecting",
-    title: "Start Detection on Google",
+    title: "Start Detection on GMeet",
     contexts: ["all"],
   });
 
   chrome.contextMenus.create({
     id: "stopDetecting",
-    title: "Stop Detection on Google",
+    title: "Stop Detection on GMeet",
     contexts: ["all"],
   });
 

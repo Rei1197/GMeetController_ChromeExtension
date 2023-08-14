@@ -20,6 +20,20 @@ interface OffscreenCanvas {
   ): GPUCanvasContext | null;
 }
 
+// Defined as an empty interface here to prevent errors when using these types in a worker.
+interface HTMLVideoElement {}
+
+type GPUOrigin2DStrict =
+
+    | Iterable<GPUIntegerCoordinate>
+    | GPUOrigin2DDictStrict;
+
+interface GPUOrigin2DDictStrict
+  extends GPUOrigin2DDict {
+  /** @deprecated Does not exist for GPUOrigin2D. */
+  z?: undefined;
+}
+
 type GPUExtent3DStrict =
 
     | Iterable<GPUIntegerCoordinate>
@@ -30,7 +44,7 @@ type GPUExtent3DStrict =
 // attempts to set depth rather than depthOrArrayLayers on a GPUExtent3D (an easy mistake to make.)
 interface GPUExtent3DDictStrict
   extends GPUExtent3DDict {
-  /** @deprecated use depthOrArrayLayers instead */
+  /** @deprecated The correct name is `depthOrArrayLayers`. */
   depth?: undefined;
 }
 
@@ -130,13 +144,15 @@ type GPUBufferBindingType =
     | "uniform"
     | "storage"
     | "read-only-storage";
+type GPUBufferMapState =
+
+    | "unmapped"
+    | "pending"
+    | "mapped";
 type GPUCanvasAlphaMode =
 
     | "opaque"
     | "premultiplied";
-/** @deprecated use GPUCanvasAlphaMode instead */
-type GPUCanvasCompositingAlphaMode =
-  GPUCanvasAlphaMode;
 type GPUCompareFunction =
 
     | "never"
@@ -165,8 +181,9 @@ type GPUDeviceLostReason =
   "destroyed";
 type GPUErrorFilter =
 
+    | "validation"
     | "out-of-memory"
-    | "validation";
+    | "internal";
 type GPUFeatureName =
 
     | "depth-clip-control"
@@ -177,7 +194,9 @@ type GPUFeatureName =
     | "timestamp-query"
     | "indirect-first-instance"
     | "shader-f16"
-    | "bgra8unorm-storage";
+    | "rg11b10ufloat-renderable"
+    | "bgra8unorm-storage"
+    | "float32-filterable";
 type GPUFilterMode =
 
     | "nearest"
@@ -198,6 +217,10 @@ type GPUMipmapFilterMode =
 
     | "nearest"
     | "linear";
+type GPUPipelineErrorReason =
+
+    | "validation"
+    | "internal";
 type GPUPowerPreference =
 
     | "low-power"
@@ -442,27 +465,27 @@ interface GPUBindGroupLayoutEntry {
    */
   visibility: GPUShaderStageFlags;
   /**
-   * When not `undefined`, indicates the binding resource type for this {@link GPUBindGroupLayoutEntry}
+   * When map/exist|provided, indicates the binding resource type for this {@link GPUBindGroupLayoutEntry}
    * is {@link GPUBufferBinding}.
    */
   buffer?: GPUBufferBindingLayout;
   /**
-   * When not `undefined`, indicates the binding resource type for this {@link GPUBindGroupLayoutEntry}
+   * When map/exist|provided, indicates the binding resource type for this {@link GPUBindGroupLayoutEntry}
    * is {@link GPUSampler}.
    */
   sampler?: GPUSamplerBindingLayout;
   /**
-   * When not `undefined`, indicates the binding resource type for this {@link GPUBindGroupLayoutEntry}
+   * When map/exist|provided, indicates the binding resource type for this {@link GPUBindGroupLayoutEntry}
    * is {@link GPUTextureView}.
    */
   texture?: GPUTextureBindingLayout;
   /**
-   * When not `undefined`, indicates the binding resource type for this {@link GPUBindGroupLayoutEntry}
+   * When map/exist|provided, indicates the binding resource type for this {@link GPUBindGroupLayoutEntry}
    * is {@link GPUTextureView}.
    */
   storageTexture?: GPUStorageTextureBindingLayout;
   /**
-   * When not `undefined`, indicates the binding resource type for this {@link GPUBindGroupLayoutEntry}
+   * When map/exist|provided, indicates the binding resource type for this {@link GPUBindGroupLayoutEntry}
    * is {@link GPUExternalTexture}.
    */
   externalTexture?: GPUExternalTextureBindingLayout;
@@ -500,7 +523,8 @@ interface GPUBufferBinding {
    */
   offset?: GPUSize64;
   /**
-   * The size, in bytes, of the buffer binding. If `undefined`, specifies the range starting at
+   * The size, in bytes, of the buffer binding.
+   * If not map/exist|provided, specifies the range starting at
    * {@link GPUBufferBinding#offset} and ending at the end of {@link GPUBufferBinding#buffer}.
    */
   size?: GPUSize64;
@@ -516,12 +540,13 @@ interface GPUBufferBindingLayout {
    */
   hasDynamicOffset?: boolean;
   /**
-   * Indicates the minimum buffer binding size.
+   * Indicates the minimum {@link GPUBufferBinding#size} of a buffer binding used with this bind point.
    * Bindings are always validated against this size in {@link GPUDevice#createBindGroup}.
    * If this *is not* `0`, pipeline creation additionally [$validating shader binding|validates$]
-   * that this value is large enough for the bindings declared in the shader.
-   * If this *is* `0`, draw/dispatch commands additionally [$Validate encoder bind groups|validate$]
-   * that each binding in the {@link GPUBindGroup} is large enough for the bindings declared in the shader.
+   * that this value &ge; the minimum buffer binding size of the variable.
+   * If this *is* `0`, it is ignored by pipeline creation, and instead draw/dispatch commands
+   * [$Validate encoder bind groups|validate$] that each binding in the {@link GPUBindGroup}
+   * satisfies the minimum buffer binding size of the variable.
    * Note:
    * Similar execution-time validation is theoretically possible for other
    * binding-related fields specified for early validation, like
@@ -590,10 +615,6 @@ interface GPUCanvasConfiguration {
    * {@link GPUCanvasContext#getCurrentTexture} when read, displayed, or used as an image source.
    */
   alphaMode?: GPUCanvasAlphaMode;
-  /** @deprecated use alphaMode instead (it is specified to affect the behavior of reading from the canvas) */
-  compositingAlphaMode?: GPUCanvasCompositingAlphaMode;
-  /** @deprecated use the canvas width/height instead */
-  size?: GPUExtent3D;
 }
 
 interface GPUColorDict {
@@ -646,12 +667,12 @@ interface GPUDepthStencilState {
    * Indicates if this {@link GPURenderPipeline} can modify
    * {@link GPURenderPassDescriptor#depthStencilAttachment} depth values.
    */
-  depthWriteEnabled?: boolean;
+  depthWriteEnabled: boolean;
   /**
    * The comparison operation used to test fragment depths against
    * {@link GPURenderPassDescriptor#depthStencilAttachment} depth values.
    */
-  depthCompare?: GPUCompareFunction;
+  depthCompare: GPUCompareFunction;
   /**
    * Defines how stencil comparisons and operations are performed for front-facing primitives.
    */
@@ -749,13 +770,14 @@ interface GPUImageCopyExternalImage {
    */
   source:
     | ImageBitmap
+    | HTMLVideoElement
     | HTMLCanvasElement
     | OffscreenCanvas;
   /**
    * Defines the origin of the copy - the minimum (top-left) corner of the source sub-region to copy from.
    * Together with `copySize`, defines the full copy sub-region.
    */
-  origin?: GPUOrigin2D;
+  origin?: GPUOrigin2DStrict;
   /**
    * Describes whether the source image is vertically flipped, or not.
    * If this option is set to `true`, the copy is flipped vertically: the bottom row of the source
@@ -876,10 +898,14 @@ interface GPUPipelineDescriptorBase
     | GPUAutoLayoutMode;
 }
 
+interface GPUPipelineErrorInit {
+  reason: GPUPipelineErrorReason;
+}
+
 interface GPUPipelineLayoutDescriptor
   extends GPUObjectDescriptorBase {
   /**
-   * A list of {@link GPUBindGroupLayout}s the pipline will use. Each element corresponds to a
+   * A list of {@link GPUBindGroupLayout}s the pipeline will use. Each element corresponds to a
    * @group attribute in the {@link GPUShaderModule}, with the `N`th element corresponding with
    * `@group(N)`.
    */
@@ -892,12 +918,18 @@ interface GPUPrimitiveState {
    */
   topology?: GPUPrimitiveTopology;
   /**
-   * For strip topologies ({@link GPUPrimitiveTopology#"line-strip"} or
-   * {@link GPUPrimitiveTopology#"triangle-strip"}), defines the format of indices that may be used
-   * with this {@link GPURenderPipeline}. This determines the strip's primitive restart value. See
-   * [[#primitive-assembly]] for additional details.
-   * Required only if the pipeline is used with indexed draw calls.
-   * Not allowed with non-strip topologies.
+   * For pipelines with strip topologies
+   * ({@link GPUPrimitiveTopology#"line-strip"} or {@link GPUPrimitiveTopology#"triangle-strip"}),
+   * this determines the index buffer format and primitive restart value
+   * ({@link GPUIndexFormat#"uint16"}/`0xFFFF` or {@link GPUIndexFormat#"uint32"}/`0xFFFFFFFF`).
+   * It is not allowed on pipelines with non-strip topologies.
+   * Note: Some implementations require knowledge of the primitive restart value to compile
+   * pipeline state objects.
+   * To use a strip-topology pipeline with an indexed draw call
+   * ({@link GPURenderCommandsMixin#drawIndexed()} or {@link GPURenderCommandsMixin#drawIndexedIndirect}),
+   * this must be set, and it must match the index buffer format used with the draw call
+   * (set in {@link GPURenderCommandsMixin#setIndexBuffer}).
+   * See [[#primitive-assembly]] for additional details.
    */
   stripIndexFormat?: GPUIndexFormat;
   /**
@@ -909,7 +941,7 @@ interface GPUPrimitiveState {
    */
   cullMode?: GPUCullMode;
   /**
-   * If true, indicates that depth clipping is disabled. See [[#depth-clip-control]] for additional details.
+   * If true, indicates that depth clipping is disabled.
    * Requires the {@link GPUFeatureName#"depth-clip-control"} feature to be enabled.
    */
   unclippedDepth?: boolean;
@@ -961,30 +993,23 @@ interface GPURenderPassColorAttachment {
   resolveTarget?: GPUTextureView;
   /**
    * Indicates the value to clear {@link GPURenderPassColorAttachment#view} to prior to executing the
-   * render pass. If not map/exist|provided defaults to `{r: 0, g: 0, b: 0, a: 0}`. Ignored
+   * render pass. If not map/exist|provided, defaults to `{r: 0, g: 0, b: 0, a: 0}`. Ignored
    * if {@link GPURenderPassColorAttachment#loadOp} is not {@link GPULoadOp#"clear"}.
-   * The members of {@link GPURenderPassColorAttachment#clearValue} are all double values, so
-   * they will first be converted to the fully qualified format type of
-   * {@link GPURenderPassColorAttachment#view} before being set as the clear value of
-   * {@link GPURenderPassColorAttachment#view}.
-   * <div algorithm="clearValue to texture value">
-   * Let `colorAttachmentFormat` be
-   * {@link GPURenderPassColorAttachment#view}.{@link GPUTextureView#[[descriptor]]}.{@link GPUTextureViewDescriptor#format}.
-   * `colorAttachmentFormat` has up to four components: `r`, `g`, `b`, and `a`, each
-   * component containing one scalar value.
-   * For each `componentType` of `colorAttachmentFormat` and corresponding component scalar
-   * value `value` in {@link GPURenderPassColorAttachment#clearValue}:
-   * 1. If `componentType` is a:
-   * <dl class=switch>
-   * : floating-point type or normalized type
-   * Convert `value` converted to an IDL value|to an IDL value of type {{unrestricted float}} (`f32`).
-   * : signed integer type
-   * Convert `value` converted to an IDL value|to an IDL value of type {{long long}} (`i32`).
-   * : unsigned integer type
-   * Convert `value` converted to an IDL value|to an IDL value of type {{unsigned long long}} (`u32`).
+   * The components of {@link GPURenderPassColorAttachment#clearValue} are all double values.
+   * They are converted [$to a texel value of texture format$] matching the render attachment.
+   * If conversion fails, a validation error is generated.
    */
   clearValue?: GPUColor;
+  /**
+   * Indicates the load operation to perform on {@link GPURenderPassColorAttachment#view} prior to
+   * executing the render pass.
+   * Note: It is recommended to prefer clearing; see {@link GPULoadOp#"clear"} for details.
+   */
   loadOp: GPULoadOp;
+  /**
+   * The store operation to perform on {@link GPURenderPassColorAttachment#view}
+   * after executing the render pass.
+   */
   storeOp: GPUStoreOp;
 }
 
@@ -998,7 +1023,7 @@ interface GPURenderPassDepthStencilAttachment {
    * Indicates the value to clear {@link GPURenderPassDepthStencilAttachment#view}'s depth component
    * to prior to executing the render pass. Ignored if {@link GPURenderPassDepthStencilAttachment#depthLoadOp}
    * is not {@link GPULoadOp#"clear"}. Must be between 0.0 and 1.0, inclusive.
-   * <!-- unless unrestricted depth is enabled -->
+   * <!-- POSTV1(unrestricted-depth): unless unrestricted depth is enabled -->
    */
   depthClearValue?: number;
   /**
@@ -1010,7 +1035,6 @@ interface GPURenderPassDepthStencilAttachment {
   /**
    * The store operation to perform on {@link GPURenderPassDepthStencilAttachment#view}'s
    * depth component after executing the render pass.
-   * Note: It is recommended to prefer a clear-value; see {@link GPULoadOp#"load"}.
    */
   depthStoreOp?: GPUStoreOp;
   /**
@@ -1109,7 +1133,7 @@ interface GPURenderPipelineDescriptor
   multisample?: GPUMultisampleState;
   /**
    * Describes the fragment shader entry point of the pipeline and its output colors. If
-   * `undefined`, the [[#no-color-output]] mode is enabled.
+   * not map/exist|provided, the [[#no-color-output]] mode is enabled.
    */
   fragment?: GPUFragmentState;
 }
@@ -1248,8 +1272,10 @@ interface GPUStencilFaceState {
 
 interface GPUStorageTextureBindingLayout {
   /**
-   * Indicates whether texture views bound to this binding will be bound for read-only or
-   * write-only access.
+   * The access mode for this binding, indicating readability and writability.
+   * Note:
+   * There is currently only one access mode, {@link GPUStorageTextureAccess#"write-only"},
+   * but this will expand in the future.
    */
   access?: GPUStorageTextureAccess;
   /**
@@ -1472,15 +1498,6 @@ interface GPUDebugCommandsMixin {
 }
 
 interface GPUObjectBase {
-  /**
-   * Initially the empty string.
-   * A developer-provided label which can be used by the browser, OS, or other tools to help
-   * identify the underlying internal object to the developer. Examples include displaying
-   * the label in error/warning messages, browser developer tools, and platform debugging
-   * utilities. The user agent is free to choose if and how it will use this label.
-   * Note: {@link GPUObjectBase#label} is defined as a {@link USVString} because some user agents may
-   * supply it to the debug facilities of the underlying native APIs.
-   */
   label: string;
 }
 
@@ -1633,8 +1650,6 @@ interface GPUAdapter {
    * @internal
    */
   readonly __brand: "GPUAdapter";
-  /** @deprecated use requestAdapterInfo instead */
-  readonly name: string;
   /**
    * The set of values in `this`.{@link GPUAdapter#[[adapter]]}.{@link adapter#[[features]]}.
    */
@@ -1749,9 +1764,21 @@ interface GPUBuffer
    * @internal
    */
   readonly __brand: "GPUBuffer";
+  readonly size: GPUSize64;
+  readonly usage: GPUBufferUsageFlags;
+  readonly mapState: GPUBufferMapState;
   /**
    * Maps the given range of the {@link GPUBuffer} and resolves the returned {@link Promise} when the
    * {@link GPUBuffer}'s content is ready to be accessed with {@link GPUBuffer#getMappedRange}.
+   * The resolution of the returned {@link Promise} **only** indicates that the buffer has been mapped.
+   * It does not guarantee the completion of any other operations visible to the content timeline,
+   * and in particular does not imply that any other {@link Promise} returned from
+   * {@link GPUQueue#onSubmittedWorkDone()} or {@link GPUBuffer#mapAsync} on other {@link GPUBuffer}s
+   * have resolved.
+   * The resolution of the {@link Promise} returned from {@link GPUQueue#onSubmittedWorkDone}
+   * **does** imply the completion of
+   * {@link GPUBuffer#mapAsync} calls made prior to that call,
+   * on {@link GPUBuffer}s last used exclusively on that queue.
    * @param mode - Whether the buffer should be mapped for reading or writing.
    * @param offset - Offset in bytes into the buffer to the start of the range to map.
    * @param size - Size in bytes of the range to map.
@@ -1762,7 +1789,7 @@ interface GPUBuffer
     size?: GPUSize64
   ): Promise<undefined>;
   /**
-   * Returns a mapped range ArrayBuffer with the contents of the {@link GPUBuffer} in the given mapped range.
+   * Returns an {@link ArrayBuffer} with the contents of the {@link GPUBuffer} in the given mapped range.
    * @param offset - Offset in bytes into the buffer to return buffer contents from.
    * @param size - Size in bytes of the {@link ArrayBuffer} to return.
    */
@@ -1782,14 +1809,6 @@ interface GPUBuffer
    * free resource allocations, including mapped memory that was just unmapped.
    */
   destroy(): undefined;
-  /**
-   * The length of the {@link GPUBuffer} allocation in bytes.
-   */
-  readonly size: GPUSize64;
-  /**
-   * The allowed usages for this {@link GPUBuffer}.
-   */
-  readonly usage: GPUBufferUsageFlags;
 }
 
 declare var GPUBuffer: {
@@ -1822,10 +1841,6 @@ interface GPUCanvasContext {
    * Removes the context configuration. Destroys any textures produced while configured.
    */
   unconfigure(): undefined;
-  /** @deprecated Use {@link GPU#getPreferredCanvasFormat} instead. */
-  getPreferredFormat(
-    adapter: GPUAdapter
-  ): GPUTextureFormat;
   /**
    * Get the {@link GPUTexture} that will be composited to the document by the {@link GPUCanvasContext}
    * next.
@@ -2008,23 +2023,29 @@ interface GPUCompilationMessage {
    */
   readonly __brand: "GPUCompilationMessage";
   /**
-   * A human-readable string containing the message generated during the shader compilation.
+   * The human-readable, localizable text for this compilation message.
+   * Note: The {@link GPUCompilationMessage#message} should follow the best practices for language
+   * and direction information. This includes making use of any future standards which may
+   * emerge regarding the reporting of string language and direction metadata.
+   * <p class="note editorial">Editorial:
+   * At the time of this writing, no language/direction recommendation is available that provides
+   * compatibility and consistency with legacy APIs, but when there is, adopt it formally.
    */
   readonly message: string;
   /**
    * The severity level of the message.
-   * If the {@link GPUCompilationMessage#type} is "error", it corresponds to a
-   * shader-creation error.
+   * If the {@link GPUCompilationMessage#type} is {@link GPUCompilationMessageType#"error"}, it
+   * corresponds to a shader-creation error.
    */
   readonly type: GPUCompilationMessageType;
   /**
    * The line number in the shader {@link GPUShaderModuleDescriptor#code} the
    * {@link GPUCompilationMessage#message} corresponds to. Value is one-based, such that a lineNum of
-   * `1` indicates the first line of the shader {@link GPUShaderModuleDescriptor#code}.
+   * `1` indicates the first line of the shader {@link GPUShaderModuleDescriptor#code}. Lines are
+   * delimited by line breaks.
    * If the {@link GPUCompilationMessage#message} corresponds to a substring this points to
    * the line on which the substring begins. Must be `0` if the {@link GPUCompilationMessage#message}
    * does not correspond to any specific point in the shader {@link GPUShaderModuleDescriptor#code}.
-   * Issue(gpuweb/gpuweb#2435): Reference WGSL spec when it [defines what a line is](https://gpuweb.github.io/gpuweb/wgsl/#comments).
    */
   readonly lineNum: number;
   /**
@@ -2088,12 +2109,6 @@ interface GPUComputePassEncoder
     workgroupCountY?: GPUSize32,
     workgroupCountZ?: GPUSize32
   ): undefined;
-  /** @deprecated Use dispatchWorkgroups instead */
-  dispatch(
-    workgroupCountX: GPUSize32,
-    workgroupCountY?: GPUSize32,
-    workgroupCountZ?: GPUSize32
-  ): undefined;
   /**
    * Dispatch work to be performed with the current {@link GPUComputePipeline} using parameters read
    * from a {@link GPUBuffer}.
@@ -2105,11 +2120,6 @@ interface GPUComputePassEncoder
    * @param indirectOffset - Offset in bytes into `indirectBuffer` where the dispatch data begins.
    */
   dispatchWorkgroupsIndirect(
-    indirectBuffer: GPUBuffer,
-    indirectOffset: GPUSize64
-  ): undefined;
-  /** @deprecated Use dispatchWorkgroupsIndirect instead */
-  dispatchIndirect(
     indirectBuffer: GPUBuffer,
     indirectOffset: GPUSize64
   ): undefined;
@@ -2167,9 +2177,6 @@ interface GPUDevice
    * Destroys the device, preventing further operations on it.
    * Outstanding asynchronous operations will fail.
    * Note: It is valid to destroy a device multiple times.
-   * Note: Since no further operations can be enqueued on this device, implementations can abort
-   * outstanding asynchronous operations immediately and free resource allocations, including
-   * mapped memory that was just unmapped.
    */
   destroy(): undefined;
   /**
@@ -2229,23 +2236,24 @@ interface GPUDevice
     descriptor: GPUShaderModuleDescriptor
   ): GPUShaderModule;
   /**
-   * Creates a {@link GPUComputePipeline}.
+   * Creates a {@link GPUComputePipeline} using immediate pipeline creation.
    * @param descriptor - Description of the {@link GPUComputePipeline} to create.
    */
   createComputePipeline(
     descriptor: GPUComputePipelineDescriptor
   ): GPUComputePipeline;
   /**
-   * Creates a {@link GPURenderPipeline}.
+   * Creates a {@link GPURenderPipeline} using immediate pipeline creation.
    * @param descriptor - Description of the {@link GPURenderPipeline} to create.
    */
   createRenderPipeline(
     descriptor: GPURenderPipelineDescriptor
   ): GPURenderPipeline;
   /**
-   * Creates a {@link GPUComputePipeline}. The returned {@link Promise} resolves when the created pipeline
+   * Creates a {@link GPUComputePipeline} using async pipeline creation.
+   * The returned {@link Promise} resolves when the created pipeline
    * is ready to be used without additional delay.
-   * If pipeline creation fails, the returned {@link Promise} rejects with an {@link OperationError}.
+   * If pipeline creation fails, the returned {@link Promise} rejects with an {@link GPUPipelineError}.
    * Note: Use of this method is preferred whenever possible, as it prevents blocking the
    * queue timeline work on pipeline compilation.
    * @param descriptor - Description of the {@link GPUComputePipeline} to create.
@@ -2254,9 +2262,10 @@ interface GPUDevice
     descriptor: GPUComputePipelineDescriptor
   ): Promise<GPUComputePipeline>;
   /**
-   * Creates a {@link GPURenderPipeline}. The returned {@link Promise} resolves when the created pipeline
+   * Creates a {@link GPURenderPipeline} using async pipeline creation.
+   * The returned {@link Promise} resolves when the created pipeline
    * is ready to be used without additional delay.
-   * If pipeline creation fails, the returned {@link Promise} rejects with an {@link OperationError}.
+   * If pipeline creation fails, the returned {@link Promise} rejects with an {@link GPUPipelineError}.
    * Note: Use of this method is preferred whenever possible, as it prevents blocking the
    * queue timeline work on pipeline compilation.
    * @param descriptor - Description of the {@link GPURenderPipeline} to create.
@@ -2286,10 +2295,9 @@ interface GPUDevice
     descriptor: GPUQuerySetDescriptor
   ): GPUQuerySet;
   /**
-   * A promise which is created with the device, remains pending for the lifetime of the device,
-   * then resolves when the device is lost.
-   * This attribute is backed by an immutable internal slot of the same name, initially set
-   * to a new promise, and always returns its value.
+   * A slot-backed attribute holding a promise which is created with the device, remains
+   * pending for the lifetime of the device, then resolves when the device is lost.
+   * Upon initialization, it is set to a new promise.
    */
   readonly lost: Promise<GPUDeviceLostInfo>;
   /**
@@ -2301,7 +2309,8 @@ interface GPUDevice
   ): undefined;
   /**
    * Pops a GPU error scope off the {@link GPUDevice#[[errorScopeStack]]} for `this`
-   * and resolves to a {@link GPUError} if one was observed by the error scope.
+   * and resolves to **any** {@link GPUError} observed by the error scope, or `null` if none.
+   * There is no guarantee of the ordering of promise resolution.
    */
   popErrorScope(): Promise<GPUError | null>;
   /**
@@ -2340,12 +2349,19 @@ declare var GPUDeviceLostInfo: {
 
 interface GPUError {
   /**
-   * A human-readable message providing information about the error that occurred.
+   * A human-readable, localizable text message providing information about the error that
+   * occurred.
    * Note: This message is generally intended for application developers to debug their
    * applications and capture information for debug reports, not to be surfaced to end-users.
    * Note: User agents should not include potentially machine-parsable details in this message,
-   * such as free system memory on "out-of-memory" errors, or other details
-   * about the conditions under which memory was exhausted.
+   * such as free system memory on {@link GPUErrorFilter#"out-of-memory"} or other details about the
+   * conditions under which memory was exhausted.
+   * Note: The {@link GPUError#message} should follow the best practices for language and
+   * direction information. This includes making use of any future standards which may emerge
+   * regarding the reporting of string language and direction metadata.
+   * <p class="note editorial">Editorial:
+   * At the time of this writing, no language/direction recommendation is available that provides
+   * compatibility and consistency with legacy APIs, but when there is, adopt it formally.
    */
   readonly message: string;
 }
@@ -2363,16 +2379,28 @@ interface GPUExternalTexture
    * @internal
    */
   readonly __brand: "GPUExternalTexture";
-  /**
-   * Returns the value of {@link GPUExternalTexture#[[destroyed]]}, which indicates
-   * whether the texture has [$expire stale external textures|expired$] or not.
-   */
-  readonly expired: boolean;
 }
 
 declare var GPUExternalTexture: {
   prototype: GPUExternalTexture;
   new (): never;
+};
+
+interface GPUInternalError
+  extends GPUError {
+  /**
+   * Nominal type branding.
+   * https://github.com/microsoft/TypeScript/pull/33038
+   * @internal
+   */
+  readonly __brand: "GPUInternalError";
+}
+
+declare var GPUInternalError: {
+  prototype: GPUInternalError;
+  new (
+    message: string
+  ): GPUInternalError;
 };
 
 interface GPUOutOfMemoryError
@@ -2390,6 +2418,33 @@ declare var GPUOutOfMemoryError: {
   new (
     message: string
   ): GPUOutOfMemoryError;
+};
+
+interface GPUPipelineError
+  extends DOMException {
+  /**
+   * Nominal type branding.
+   * https://github.com/microsoft/TypeScript/pull/33038
+   * @internal
+   */
+  readonly __brand: "GPUPipelineError";
+  /**
+   * A read-only slot-backed attribute exposing the type of error encountered in pipeline creation
+   * as a <dfn enum for=>GPUPipelineErrorReason</dfn>:
+   * <ul dfn-type=enum-value dfn-for=GPUPipelineErrorReason>
+   * - <dfn>"validation"</dfn>: A [$validation error$].
+   * - <dfn>"internal"</dfn>: An [$internal error$].
+   * </ul>
+   */
+  readonly reason: GPUPipelineErrorReason;
+}
+
+declare var GPUPipelineError: {
+  prototype: GPUPipelineError;
+  new (
+    message: string,
+    options: GPUPipelineErrorInit
+  ): GPUPipelineError;
 };
 
 interface GPUPipelineLayout
@@ -2453,6 +2508,9 @@ interface GPUQueue
   /**
    * Returns a {@link Promise} that resolves once this queue finishes processing all the work submitted
    * up to this moment.
+   * Resolution of this {@link Promise} implies the completion of
+   * {@link GPUBuffer#mapAsync} calls made prior to that call,
+   * on {@link GPUBuffer}s last used exclusively on that queue.
    */
   onSubmittedWorkDone(): Promise<undefined>;
   /**
@@ -2498,7 +2556,7 @@ interface GPUQueue
    * values, as copying into the corresponding non-`-srgb` format.
    * Thus, after a copy operation, sampling the destination texture has
    * different results depending on whether its format is `-srgb`, all else unchanged.
-   * Issue: If an srgb-linear color space is added, explain here how it interacts.
+   * <!-- POSTV1(srgb-linear): If added, explain here how it interacts. -->
    * @param source - source image and origin to copy to `destination`.
    * @param destination - The texture subresource and origin to write to, and its encoding metadata.
    * @param copySize - Extents of the content to write from `source` to `destination`.
@@ -2610,7 +2668,7 @@ interface GPURenderPassEncoder
     color: GPUColor
   ): undefined;
   /**
-   * Sets the {@link GPURenderPassEncoder#[[stencil_reference]]} value used during stencil tests with
+   * Sets the {@link RenderState#[[stencilReference]]} value used during stencil tests with
    * the {@link GPUStencilOperation#"replace"} {@link GPUStencilOperation}.
    * @param reference - The new stencil reference value.
    */
@@ -2695,7 +2753,7 @@ interface GPUShaderModule
    * The locations, order, and contents of messages are implementation-defined.
    * In particular, messages may not be ordered by {@link GPUCompilationMessage#lineNum}.
    */
-  compilationInfo(): Promise<GPUCompilationInfo>;
+  getCompilationInfo(): Promise<GPUCompilationInfo>;
 }
 
 declare var GPUShaderModule: {
@@ -2718,6 +2776,7 @@ interface GPUSupportedLimits {
   readonly maxTextureDimension3D: number;
   readonly maxTextureArrayLayers: number;
   readonly maxBindGroups: number;
+  readonly maxBindingsPerBindGroup: number;
   readonly maxDynamicUniformBuffersPerPipelineLayout: number;
   readonly maxDynamicStorageBuffersPerPipelineLayout: number;
   readonly maxSampledTexturesPerShaderStage: number;
@@ -2725,16 +2784,19 @@ interface GPUSupportedLimits {
   readonly maxStorageBuffersPerShaderStage: number;
   readonly maxStorageTexturesPerShaderStage: number;
   readonly maxUniformBuffersPerShaderStage: number;
+  readonly maxFragmentCombinedOutputResources: number;
   readonly maxUniformBufferBindingSize: number;
   readonly maxStorageBufferBindingSize: number;
   readonly minUniformBufferOffsetAlignment: number;
   readonly minStorageBufferOffsetAlignment: number;
   readonly maxVertexBuffers: number;
+  readonly maxBufferSize: number;
   readonly maxVertexAttributes: number;
   readonly maxVertexBufferArrayStride: number;
   readonly maxInterStageShaderComponents: number;
   readonly maxInterStageShaderVariables: number;
   readonly maxColorAttachments: number;
+  readonly maxColorAttachmentBytesPerSample: number;
   readonly maxComputeWorkgroupStorageSize: number;
   readonly maxComputeInvocationsPerWorkgroup: number;
   readonly maxComputeWorkgroupSizeX: number;
@@ -2829,13 +2891,8 @@ interface GPUUncapturedErrorEvent
    */
   readonly __brand: "GPUUncapturedErrorEvent";
   /**
-   * Object representing the error that was uncaptured.
+   * A slot-backed attribute holding an object representing the error that was uncaptured.
    * This has the same type as errors returned by {@link GPUDevice#popErrorScope}.
-   * This attribute is backed by an immutable internal slot of the same name, and
-   * always returns its value.
-   * Issue(whatwg/webidl#1077): This attribute should be `[SameObject]`.
-   * (If GPUError [becomes an interface](https://github.com/gpuweb/gpuweb/issues/1884) then
-   * we can do this without resolving the WebIDL issue.)
    */
   readonly error: GPUError;
 }

@@ -113,26 +113,6 @@ const logMeetVideoStream = async () => {
 		return;
 	}
 
-	// const video = videos[0];
-
-	// const createCanvasOverlay = (videoElement: HTMLVideoElement) => {
-	// 	const canvas = document.createElement('canvas');
-	// 	canvas.width = video.clientWidth;
-	// 	canvas.height = video.clientHeight;
-	// 	canvas.style.position = "absolute";
-	// 	canvas.style.top = "0";
-	// 	canvas.style.left = "0";
-	// 	// canvas.style.zIndex = '999';
-
-	// 	const parentElement = videoElement.parentElement;
-	// 	parentElement.style.position = 'relative';
-	// 	parentElement.appendChild(canvas);
-
-	// 	return canvas;
-	// };
-
-	// const canvas = createCanvasOverlay(video);
-
 	console.log('Loading model...');
 	await tf.ready();
 	const model = await cocoSsd.load();
@@ -155,40 +135,6 @@ const logMeetVideoStream = async () => {
 		processFrame(video, canvas, model);
 	}
 
-	// const drawBoundingBoxes = (canvas: HTMLCanvasElement, predictions: cocoSsd.DetectedObject[]) => {
-	// 	const ctx = canvas.getContext('2d');
-	// 	ctx.clearRect(0, 0, canvas.width, canvas.height);
-	// 	ctx.lineWidth = 2;
-
-	// 	predictions.forEach(({ bbox, class: detectedClass }) => {
-	// 		const [x, y, width, height] = bbox;
-	// 		ctx.strokeStyle = 'red';
-	// 		ctx.strokeRect(x, y, width, height);
-	// 		ctx.font = '14px Arial';
-	// 		ctx.fillStyle = 'red';
-	// 		ctx.fillText(detectedClass, x, y - 4);
-	// 	});
-	// };
-
-	// const processFrame = async () => {
-	// 	if (!isDetecting) {
-	// 		return
-	// 	}
-	// 	const frameData = await captureVideoFrame(video);
-	// 	const predictions = await model.detect(frameData);
-
-	// 	const formattedPredictions = predictions.map(({ class: detectedClass, score }) => ({
-	// 		detectedClass,
-	// 		score,
-	// 	}));
-	// 	console.log("Predictions:", formattedPredictions);
-	// 	drawBoundingBoxes(canvas, predictions);
-
-
-	// 	requestAnimationFrame(processFrame);
-	// };
-
-	// processFrame();
 };
 
 const clearCanvas = (canvas: HTMLCanvasElement) => {

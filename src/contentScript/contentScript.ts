@@ -2,12 +2,12 @@ import * as tf from "@tensorflow/tfjs";
 import { loadGraphModel } from "@tensorflow/tfjs-converter";
 
 let isDetecting = false;
-let customModelURL = chrome.runtime.getURL('best_web_model.json')
+let customModelURL = chrome.runtime.getURL('yolov8n_web_model.json')
 let model = null;
 
 chrome.runtime.onMessage.addListener(async (message: any, sender, sendResponse) => {
   if (message.type === 'startDetecting') {
-        isDetecting = true;
+    isDetecting = true;
     await loadCustomModel();
     if (model) {
       detectObjectOnMeet();
@@ -50,61 +50,114 @@ const loadCustomModel = async () => {
   }
 };
 
+const decodeYOLOOutput = (outputArray: any[]) => {
+  const gridSize = 13;  // Adjust if different.
+  const numAnchors = 5;  // Adjust if different.
+  // const valuesPerAnchor = 5;
+  let decodedOutput = [];
+
+  for (let y = 0; y < gridSize; y++) {
+    for (let x = 0; x < gridSize; x++) {
+      for (let anchor = 0; anchor < numAnchors; anchor++) {
+        let j = y * gridSize * numAnchors + x * numAnchors + anchor;
+        let tx = outputArray[0][0][j];
+        let ty = outputArray[0][1][j];
+        let tw = outputArray[0][2][j];
+        let th = outputArray[0][3][j];
+        let confidence = outputArray[0][4][j];
+
+        let bx = (sigmoid(tx) + x)
+        let by = (sigmoid(ty) + y) 
+        let bw = Math.exp(tw)  // This may need adjustment based on anchor box sizes
+        let bh = Math.exp(th)
+        confidence = sigmoid(confidence);
+
+        console.log("confidence:",confidence)
+
+        decodedOutput.push({
+          x: bx,
+          y: by,
+          width: bw,
+          height: bh,
+          confidence: confidence,
+          label: 'person'  // Only one class, so it's always 'person' in your case
+        });
+      }
+    }
+  }
+  return decodedOutput;
+}
+
+const sigmoid = (x: number) => {
+  return 1 / (1 + Math.exp(-x));
+}
+
 const detectObjectOnMeet = async () => {
   const videos = findVideoElements();
   for (const video of videos) {
     if (!video.paused && !video.ended) {
-        let tensor = tf.browser.fromPixels(video);
-        tensor = tensor.resizeBilinear([640, 640]);
-        tensor = tensor.expandDims(0);
-        const results = await model.predict(tensor);
-        const resultsArray = await results.array();
-        console.log(resultsArray)
+      let tensor = tf.browser.fromPixels(video);
+      tensor = tensor.resizeBilinear([640, 640]);
+      tensor = tensor.expandDims(0);
+      const results = await model.predict(tensor);
+      //   console.log(results)
+      //  console.log(results.shape)
+      // let box = results.boxes
+      // console.log(box.length)
+      const resultsArray = await results.array();
+      // const boxes = resultsArray[0];
+      // const scores = resultsArray[0][2][0] || [];  // Provide a default value if index doesn't exist
+      // const classes = resultsArray[0][1][0] || [];
 
-        const boxes = resultsArray[0][0][0];
-        // const scores = resultsArray[1][0] || [];  // Provide a default value if index doesn't exist
-        // const classes = resultsArray[2][0] || [];
+      // console.log('boxes:', boxes)
+      // console.log('score:', scores)
+      // console.log('classes:', classes)
 
-        //console.log(boxes)
-        // console.log(scores)
-        // console.log(classes)
-        
-        // Log and visualize bounding boxes
-        // visualizeResults(video, resultsArray);
+      // Decode the YOLO output
+      const decodedBoxes = decodeYOLOOutput(resultsArray);
 
-        // Clean up tensor to prevent GPU memory leak
-        tensor.dispose();
+      // Log and visualize bounding boxes
+      visualizeResults(video, decodedBoxes);
+
+      // Clean up tensor to prevent GPU memory leak
+      tensor.dispose();
     }
   }
   setTimeout(detectObjectOnMeet, 1000);
 }
 
-// const visualizeResults = (video: HTMLVideoElement, resultsArray: any[]) => {
-//   const canvas = document.createElement('canvas');
-//   const ctx = canvas.getContext('2d');
+const visualizeResults = (video: HTMLVideoElement, resultsArray: any[]) => {
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
 
-//   canvas.width = video.clientWidth;
-//   canvas.height = video.clientHeight;
-//   canvas.style.position = 'absolute';
-//   canvas.style.top = `${video.offsetTop}px`;
-//   canvas.style.left = `${video.offsetLeft}px`;
-//   canvas.style.pointerEvents = 'none';
+  canvas.width = video.clientWidth;
+  canvas.height = video.clientHeight;
+  canvas.style.position = 'absolute';
+  canvas.style.top = `${video.offsetTop}px`;
+  canvas.style.left = `${video.offsetLeft}px`;
+  canvas.style.pointerEvents = 'none';
 
-//   video.parentElement?.appendChild(canvas);
+  video.parentElement?.appendChild(canvas);
 
-//   for (const result of resultsArray) {
-//     const { x, y, width, height, confidence, label } = result; // Modify based on your model's output structure
-    
-//     if (confidence > 0.9) {
-//       ctx!.strokeStyle = label === 'person' ? 'red' : 'blue';
-//       ctx!.lineWidth = 2;
-//       ctx!.strokeRect(x, y, width, height);
+  for (const result of resultsArray) {
+    const { x, y, width, height, confidence, label } = result;
 
-//       if (label === 'person') {
-//         console.log('Detected a person with confidence:', confidence);
-//       } else {
-//         console.log('Detected others with confidence:', confidence);
-//       }
-//     }
-//   }
-// }
+    // Adjust for video's actual size
+    const adjustedWidth = (width / 640) * canvas.width;
+    const adjustedHeight = (height / 640) * canvas.height;
+    const topLeftX = (x - width / 2) * canvas.width;  // Convert center to top-left corner
+    const topLeftY = (y - height / 2) * canvas.height;
+
+    if (confidence > 0.4) {
+      ctx!.strokeStyle = label === 'person' ? 'red' : 'blue';
+      ctx!.lineWidth = 1;
+      ctx!.strokeRect(topLeftX, topLeftY, width * canvas.width, height * canvas.height);
+
+      if (label === 'person') {
+        console.log('Detected a person with confidence:', confidence);
+      } else {
+        console.log('Detected others with confidence:', confidence);
+      }
+    }
+  }
+}

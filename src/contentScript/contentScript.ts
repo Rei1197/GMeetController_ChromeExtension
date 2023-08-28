@@ -1,33 +1,108 @@
 import * as tf from "@tensorflow/tfjs";
-import { loadGraphModel } from "@tensorflow/tfjs-converter";
+import * as cocoSsd from "@tensorflow-models/coco-ssd";
+import '@tensorflow/tfjs-backend-cpu';
 
 let isDetecting = false;
-let customModelURL = chrome.runtime.getURL('yolov8n_web_model.json')
-let model = null;
 
-chrome.runtime.onMessage.addListener(async (message: any, sender, sendResponse) => {
-  if (message.type === 'startDetecting') {
-    isDetecting = true;
-    await loadCustomModel();
-    if (model) {
-      detectObjectOnMeet();
-    }
-  }
-});
+chrome.runtime.onMessage.addListener(async (message: any) => {
+	if (message.type === 'startDetecting') {
+		isDetecting = true;
+		await logMeetVideoStream();
+	} else if (message.type === 'stopDetecting') {
+		isDetecting = false;
+		const videoElements = findVideoElements();
+		for (const video of videoElements) {
+			const canvas = video.parentElement.querySelector('canvas');
+			if (canvas){
+				clearCanvas(canvas);
+			}
+		// if (overlayCanvas) {
+		// 	clearCanvas(overlayCanvas);
+		// }
+	}
+}});
+
+const updateOffscreenCanvasDimensions = (div, OffscreenCanvas) => {
+	const width = div.clientWidth;
+	const height = div.clientHeight;
+  
+	OffscreenCanvas.width = width;
+	OffscreenCanvas.height = height;
+  };
+
+const captureVideoFrame = async (videoElement: HTMLVideoElement) => {
+	// console.log(videoElement.videoWidth, videoElement.videoHeight)
+	const div = videoElement.closest('.p2hjYe.TPpRNe');
+	const offscreenCanvas = new OffscreenCanvas(videoElement.videoWidth, videoElement.videoHeight);
+	updateOffscreenCanvasDimensions(div, offscreenCanvas);
+
+	const ctx = offscreenCanvas.getContext("2d");
+
+	// Apply a horizontal flip transformation
+	// ctx.scale(-1, 1);
+	// ctx.translate(-offscreenCanvas.width, 0);
+
+	ctx.drawImage(videoElement, 0, 0, offscreenCanvas.width, offscreenCanvas.height);
+	return ctx.getImageData(0, 0, offscreenCanvas.width, offscreenCanvas.height);
+};
+
 
 
 const findVideoElements = () => {
-  const meetView = document.getElementsByClassName("p2hjYe TPpRNe");
-  const videoElements: HTMLVideoElement[] = [];
-  for (const container of Array.from(meetView)) {
-    const videos = container.getElementsByTagName("video");
-    if (videos.length > 0) {
-      videoElements.push(videos[0]);
-    }
-  }
-  return videoElements;
-}
+	const containerElements = document.getElementsByClassName("p2hjYe TPpRNe"); //the class name for the original screen canvas.
+	//p2hjYe TPpRNe (only the user itself) || Gv1mTb-aTv5jf Gv1mTb-PVLJEc (changed into this after joining the meeting)|| axUSnc  P9KVBf
+	const videoElements: HTMLVideoElement[] = [];
 
+	for (const container of Array.from(containerElements)) {
+		const videos = container.getElementsByTagName("video");
+		if (videos.length > 0) {
+			videoElements.push(videos[0]);
+		}
+	}
+	return videoElements;
+};
+
+const processFrame =async (video:HTMLVideoElement, canvas: HTMLCanvasElement, model: cocoSsd.ObjectDetection) => {
+	if (!isDetecting) return;
+
+	if (video.videoWidth === 0 || video.videoHeight === 0) {
+		requestAnimationFrame(() => processFrame(video, canvas, model));
+		return;
+	  }
+	
+	// Update canvas size and position to match the video
+	canvas.width = video.clientWidth;
+	canvas.height = video.clientHeight;
+	canvas.style.left = video.offsetLeft + "px";
+	canvas.style.top = video.offsetTop + "px";
+
+	const frameData = await captureVideoFrame(video);
+	const predictions = await model.detect(frameData);
+
+	const formattedPredictions = predictions.map(({ class: detectedClass, score }) => ({
+		detectedClass,
+		score,
+	  }));
+	
+	  formattedPredictions.forEach(predictions => {
+		console.log("Predictions:", predictions.detectedClass);
+	  });
+	 
+
+	const ctx = canvas.getContext("2d");
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
+	// ctx.putImageData(frameData, 0, 0);
+
+	for (const prediction of predictions) {
+		ctx.strokeStyle = "#FF0000";
+		ctx.lineWidth = 2;
+		ctx.strokeRect(...prediction.bbox);
+		ctx.font = "14px Arial";
+		ctx.fillStyle = "#FF0000";
+		ctx.fillText(`${prediction.class} (${Math.round(prediction.score * 100)}%)`, prediction.bbox[0], prediction.bbox[1] - 5);
+	}
+	requestAnimationFrame(() => processFrame(video, canvas, model));
+};
 
 const loadCustomModel = async () => {
   const videos = findVideoElements();
@@ -43,121 +118,52 @@ const loadCustomModel = async () => {
       console.error('TensorFlow.js backend is not ready.');
       return false;
     }
-
   } catch (error) {
     console.error('Failed to load the model:', error);
     return false;
   }
 };
 
-const decodeYOLOOutput = (outputArray: any[]) => {
-  const gridSize = 13;  // Adjust if different.
-  const numAnchors = 5;  // Adjust if different.
-  // const valuesPerAnchor = 5;
-  let decodedOutput = [];
+const logMeetVideoStream = async () => {
+	const videos = findVideoElements();
+	console.log(`Number of video elements: ${videos.length}`);
 
-  for (let y = 0; y < gridSize; y++) {
-    for (let x = 0; x < gridSize; x++) {
-      for (let anchor = 0; anchor < numAnchors; anchor++) {
-        let j = y * gridSize * numAnchors + x * numAnchors + anchor;
-        let tx = outputArray[0][0][j];
-        let ty = outputArray[0][1][j];
-        let tw = outputArray[0][2][j];
-        let th = outputArray[0][3][j];
-        let confidence = outputArray[0][4][j];
+	if (videos.length === 0) {
+		console.error('No video elements found on the page.');
+		return;
+	}
 
-        let bx = (sigmoid(tx) + x)
-        let by = (sigmoid(ty) + y) 
-        let bw = Math.exp(tw)  // This may need adjustment based on anchor box sizes
-        let bh = Math.exp(th)
-        confidence = sigmoid(confidence);
-
-        console.log("confidence:",confidence)
-
-        decodedOutput.push({
-          x: bx,
-          y: by,
-          width: bw,
-          height: bh,
-          confidence: confidence,
-          label: 'person'  // Only one class, so it's always 'person' in your case
-        });
-      }
-    }
+	console.log('Loading model...');
+	await tf.ready();
+  const isModelLoaded = await loadCustomModel();
+  if (!isModelLoaded) {
+    console.error('Failed to load the custom model.');
+    return;
   }
-  return decodedOutput;
-}
+	console.log('Model loaded successfully.');
 
-const sigmoid = (x: number) => {
-  return 1 / (1 + Math.exp(-x));
-}
+	for (const video of videos){
+		const canvas = document.createElement("canvas");
+		canvas.width = video.clientWidth;
+		canvas.height = video.clientHeight;
+		canvas.style.position = "absolute";
+		canvas.style.top = "0";
+		canvas.style.left = "0";
+		canvas.style.pointerEvents = "none";
+  		canvas.style.zIndex = "1000";
+		video.parentElement.appendChild(canvas);
+		const parentElement = video.parentElement;
+		parentElement.style.position = 'relative';
+		parentElement.appendChild(canvas);
+	
+		processFrame(video, canvas, model);
+	}
 
-const detectObjectOnMeet = async () => {
-  const videos = findVideoElements();
-  for (const video of videos) {
-    if (!video.paused && !video.ended) {
-      let tensor = tf.browser.fromPixels(video);
-      tensor = tensor.resizeBilinear([640, 640]);
-      tensor = tensor.expandDims(0);
-      const results = await model.predict(tensor);
-      //   console.log(results)
-      //  console.log(results.shape)
-      // let box = results.boxes
-      // console.log(box.length)
-      const resultsArray = await results.array();
-      // const boxes = resultsArray[0];
-      // const scores = resultsArray[0][2][0] || [];  // Provide a default value if index doesn't exist
-      // const classes = resultsArray[0][1][0] || [];
+};
 
-      // console.log('boxes:', boxes)
-      // console.log('score:', scores)
-      // console.log('classes:', classes)
+const clearCanvas = (canvas: HTMLCanvasElement) => {
+	const ctx = canvas.getContext('2d');
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
+};
 
-      // Decode the YOLO output
-      const decodedBoxes = decodeYOLOOutput(resultsArray);
-
-      // Log and visualize bounding boxes
-      visualizeResults(video, decodedBoxes);
-
-      // Clean up tensor to prevent GPU memory leak
-      tensor.dispose();
-    }
-  }
-  setTimeout(detectObjectOnMeet, 1000);
-}
-
-const visualizeResults = (video: HTMLVideoElement, resultsArray: any[]) => {
-  const canvas = document.createElement('canvas');
-  const ctx = canvas.getContext('2d');
-
-  canvas.width = video.clientWidth;
-  canvas.height = video.clientHeight;
-  canvas.style.position = 'absolute';
-  canvas.style.top = `${video.offsetTop}px`;
-  canvas.style.left = `${video.offsetLeft}px`;
-  canvas.style.pointerEvents = 'none';
-
-  video.parentElement?.appendChild(canvas);
-
-  for (const result of resultsArray) {
-    const { x, y, width, height, confidence, label } = result;
-
-    // Adjust for video's actual size
-    const adjustedWidth = (width / 640) * canvas.width;
-    const adjustedHeight = (height / 640) * canvas.height;
-    const topLeftX = (x - width / 2) * canvas.width;  // Convert center to top-left corner
-    const topLeftY = (y - height / 2) * canvas.height;
-
-    if (confidence > 0.4) {
-      ctx!.strokeStyle = label === 'person' ? 'red' : 'blue';
-      ctx!.lineWidth = 1;
-      ctx!.strokeRect(topLeftX, topLeftY, width * canvas.width, height * canvas.height);
-
-      if (label === 'person') {
-        console.log('Detected a person with confidence:', confidence);
-      } else {
-        console.log('Detected others with confidence:', confidence);
-      }
-    }
-  }
-}
+// let overlayCanvas: HTMLCanvasElement;

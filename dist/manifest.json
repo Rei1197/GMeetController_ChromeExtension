@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "ReactJS Extension (Github)",
   "description": "The extension for chrome using ReactJS.",
-  "version": "1.0.4",
+  "version": "1.0.3",
   "icons": {
     "16": "chrome_icon_64.png",
     "32": "chrome_icon_64.png",
@@ -36,13 +36,13 @@
     {
       "resources": [
         "assests/*",
-        "yolov8n_web_model.json",
-        "group1-shard1of4.bin",
-        "group1-shard2of4.bin",
-        "group1-shard3of4.bin",
-        "group1-shard4of4.bin",
+        "best_web_model.json",
+        "group1-shard1of3.bin",
+        "group1-shard2of3.bin",
+        "group1-shard3of3.bin",
         "https://cdn.jsdelivr.net/npm/@tensorflow/tfjs",
-        "https://storage.googleapis.com/tfjs-models/savedmodel/ssdlite_mobilenet_v2/model.json"
+        "https://storage.googleapis.com/tfjs-models/savedmodel/ssdlite_mobilenet_v2/model.json",
+        "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.15.0/dist/ort-wasm-simd.wasm"
       ],
       "matches": [
         "https://meet.google.com/*"

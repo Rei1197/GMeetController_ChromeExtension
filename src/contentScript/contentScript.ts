@@ -229,7 +229,7 @@ const visualizeResults = (video: HTMLVideoElement, boxes: any[]) => {
 
   for (const box of boxes) {
     const [x1, y1, x2, y2, label, prob] = box;
-    if (prob > 1) {
+    if (prob > 0.999999999999) {
       ctx!.strokeStyle = 'red';
       ctx!.lineWidth = 1;
       ctx!.strokeRect(x1, y1, x2 - x1, y2 - y1);

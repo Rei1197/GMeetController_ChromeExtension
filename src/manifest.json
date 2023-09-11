@@ -36,10 +36,12 @@
     {
       "resources": [
         "assests/*",
-        "best_web_model.json",
-        "group1-shard1of3.bin",
-        "group1-shard2of3.bin",
-        "group1-shard3of3.bin",
+        "yolov8n_web_model.json",
+        "group1-shard1of4.bin",
+        "group1-shard2of4.bin",
+        "group1-shard3of4.bin",
+        "group1-shard4of4.bin",
+        "metadata.yaml",
         "https://cdn.jsdelivr.net/npm/@tensorflow/tfjs",
         "https://storage.googleapis.com/tfjs-models/savedmodel/ssdlite_mobilenet_v2/model.json",
         "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.15.0/dist/ort-wasm-simd.wasm"

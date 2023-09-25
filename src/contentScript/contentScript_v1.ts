@@ -131,7 +131,6 @@ const logMeetVideoStream = async () => {
 		const parentElement = video.parentElement;
 		parentElement.style.position = 'relative';
 		parentElement.appendChild(canvas);
-	
 		processFrame(video, canvas, model);
 	}
 

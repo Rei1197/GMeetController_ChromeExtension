@@ -52,6 +52,7 @@ module.exports = {
 		extensions: ['.tsx', '.ts', '.js']
 	},
 	output: {
-		filename: '[name].js'
+		filename: '[name].js',
+		publicPath: '/'
 	}
 }
